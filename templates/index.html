@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>To-Do List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+            color: #333;
+            transition: background-color 0.3s, color 0.3s;
+        }
+        body.dark-mode {
+            background-color: #121212;
+            color: #ffffff;
+        }
+        h1 {
+            margin-top: 20px;
+        }
+        .task-list {
+            margin-top: 20px;
+        }
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #ffffff;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        .task-item.dark-mode {
+            background-color: #2c2c2c;
+        }
+        .add-task {
+            margin-bottom: 20px;
+        }
+        footer {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 0.9rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center">To-Do List</h1>
+
+        <!-- Темная тема -->
+        <div class="text-end mb-3">
+            <button class="btn btn-outline-dark btn-sm" onclick="toggleDarkMode()">Переключить тему</button>
+        </div>
+
+        <!-- Форма добавления задачи -->
+        <form action="/add" method="post" class="add-task">
+            <div class="row g-2">
+                <div class="col-md-4">
+                    <input type="text" class="form-control" name="task" placeholder="Новая задача" required>
+                </div>
+                <div class="col-md-3">
+                    <input type="text" class="form-control" name="category" placeholder="Категория (например, Учёба)">
+                </div>
+                <div class="col-md-2">
+                    <select name="urgency" class="form-select">
+                        <option value="">Срочность</option>
+                        <option value="1">Очень срочно</option>
+                        <option value="2">Срочно</option>
+                        <option value="3">Несрочно</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <select name="importance" class="form-select">
+                        <option value="">Важность</option>
+                        <option value="1">Очень важно</option>
+                        <option value="2">Важно</option>
+                        <option value="3">Не важно</option>
+                    </select>
+                </div>
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">Добавить</button>
+                </div>
+            </div>
+        </form>
+
+        <!-- Сортировка -->
+        <div class="mb-3">
+            <form action="/" method="get" class="row g-2">
+                <div class="col-md-3">
+                    <select name="sort_by" class="form-select">
+                        <option value="">Сортировка</option>
+                        <option value="urgency">По срочности</option>
+                        <option value="importance">По важности</option>
+                        <option value="both">По срочности и важности</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-secondary w-100">Применить</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Список задач -->
+        <div class="task-list">
+            {% for task in tasks %}
+            <div class="task-item{% if 'dark-mode' in body_class %} dark-mode{% endif %}">
+                <div>
+                    <strong>{{ task.task }}</strong><br>
+                    <small>
+                        Категория: {{ task.category or 'Без категории' }} |
+                        Срочность: {{ task.urgency or 'Не указана' }} |
+                        Важность: {{ task.importance or 'Не указана' }}
+                    </small>
+                </div>
+                <div>
+                    <a href="/edit/{{ loop.index0 }}" class="btn btn-sm btn-warning me-2">Редактировать</a>
+                    <a href="/delete/{{ loop.index0 }}" class="btn btn-danger btn-sm">Удалить</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <footer>
+        Made by Yeskendir
+    </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleDarkMode() {
+            document.body.classList.toggle('dark-mode');
+            document.querySelectorAll('.task-item').forEach(item => {
+                item.classList.toggle('dark-mode');
+            });
+        }
+    </script>
+</body>
+</html>
