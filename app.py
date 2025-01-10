@@ -28,6 +28,7 @@ def toggle_theme():
         session["dark_mode"] = True
     return redirect(request.referrer or url_for("index"))
 
+# Главная страница (веб-интерфейс)
 @app.route("/")
 def index():
     tasks = load_tasks()
@@ -43,6 +44,7 @@ def index():
 
     return render_template("index.html", tasks=tasks, sort_by=sort_by, dark_mode="dark_mode" in session)
 
+# Добавление задачи через форму (веб-интерфейс)
 @app.route("/add", methods=["POST"])
 def add_task():
     task_text = request.form.get("task")
@@ -61,6 +63,7 @@ def add_task():
         save_tasks(tasks)
     return redirect(url_for("index"))
 
+# Удаление задачи через URL (веб-интерфейс)
 @app.route("/delete/<int:task_id>")
 def delete_task(task_id):
     tasks = load_tasks()
@@ -69,6 +72,7 @@ def delete_task(task_id):
         save_tasks(tasks)
     return redirect(url_for("index"))
 
+# Редактирование задачи через форму (веб-интерфейс)
 @app.route("/edit/<int:task_id>", methods=["GET", "POST"])
 def edit_task(task_id):
     tasks = load_tasks()
@@ -86,6 +90,46 @@ def edit_task(task_id):
             task["importance"] = request.form.get("importance", task.get("importance", "2"))
             save_tasks(tasks)
         return redirect(url_for("index"))
+
+# API для получения всех задач (REST API)
+@app.route("/api/tasks", methods=["GET"])
+def api_get_tasks():
+    tasks = load_tasks()
+    return jsonify({"tasks": tasks})
+
+# API для добавления новой задачи (REST API)
+@app.route("/api/tasks", methods=["POST"])
+def api_add_task():
+    new_task = request.get_json()
+    tasks = load_tasks()
+    tasks.append(new_task)
+    save_tasks(tasks)
+    return jsonify({"task": new_task}), 201
+
+# API для удаления задачи (REST API)
+@app.route("/api/tasks/<int:task_id>", methods=["DELETE"])
+def api_delete_task(task_id):
+    tasks = load_tasks()
+    if 0 <= task_id < len(tasks):
+        tasks.pop(task_id)
+        save_tasks(tasks)
+        return jsonify({"message": "Task deleted"}), 200
+    return jsonify({"message": "Task not found"}), 404
+
+# API для редактирования задачи (REST API)
+@app.route("/api/tasks/<int:task_id>", methods=["PUT"])
+def api_edit_task(task_id):
+    tasks = load_tasks()
+    if 0 <= task_id < len(tasks):
+        task = tasks[task_id]
+        task_data = request.get_json()
+        task["task"] = task_data.get("task", task["task"])
+        task["category"] = task_data.get("category", task["category"])
+        task["urgency"] = task_data.get("urgency", task["urgency"])
+        task["importance"] = task_data.get("importance", task["importance"])
+        save_tasks(tasks)
+        return jsonify({"task": task})
+    return jsonify({"message": "Task not found"}), 404
 
 if __name__ == "__main__":
     app.run(debug=True)
